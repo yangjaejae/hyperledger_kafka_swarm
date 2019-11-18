@@ -1,0 +1,178 @@
+# Copyright IBM Corp. All Rights Reserved.
+#
+# SPDX-License-Identifier: Apache-2.0
+#
+
+version: '3.4'
+
+volumes:
+  customsOrg:
+
+networks:
+  cr_network:
+     external:
+        name: cr_network
+
+services:
+  kafka0:
+    container_name: kafka0.chainrefund.com
+    image: hyperledger/fabric-kafka:0.4.14
+    environment:
+      - KAFKA_TLS=true
+      - CORE_PEER_TLS_CERT_FILE=/etc/hyperledger/fabric/tls/server.crt
+      - CORE_PEER_TLS_KEY_FILE=/etc/hyperledger/fabric/tls/server.key
+      - CORE_PEER_TLS_ROOTCERT_FILE=/etc/hyperledger/fabric/tls/ca.crt
+      - ORDERER_GENERAL_TLS_PRIVATEKEY=/var/hyperledger/orderer/tls/server.key
+      - ORDERER_GENERAL_TLS_CERTIFICATE=/var/hyperledger/orderer/tls/server.crt
+      - ORDERER_GENERAL_TLS_ROOTCAS=[/var/hyperledger/orderer/tls/ca.crt]
+      - ORDERER_GENERAL_CLUSTER_CLIENTCERTIFICATE=/var/hyperledger/orderer/tls/server.crt
+      - ORDERER_GENERAL_CLUSTER_CLIENTPRIVATEKEY=/var/hyperledger/orderer/tls/server.key
+      - ORDERER_GENERAL_CLUSTER_ROOTCAS=[/var/hyperledger/orderer/tls/ca.crt]
+      - FABRIC_LOGGING_SPEC=DEBUG
+      - KAFKA_MESSAGE_MAX_BYTES=300000000 #103809024 # 99 * 1024 * 1024 B
+      - KAFKA_REPLICA_FETCH_MAX_BYTES=300000000 #103809024 # 99 * 1024 * 1024 B
+      - KAFKA_UNCLEAN_LEADER_ELECTION_ENABLE=true
+      - KAFKA_BROKER_ID=0
+      - KAFKA_MIN_INSYNC_REPLICAS=2
+      - KAFKA_DEFAULT_REPLICATION_FACTOR=3
+      - KAFKA_ZOOKEEPER_CONNECT=zookeeper0:2181,zookeeper1:2181,zookeeper2:2181
+      - KAFKA_ADVERTISED_LISTENERS=PLAINTEXT://172.31.47.47:9092
+      - KAFKA_ADVERTISED_HOST_NAME=kafka0.chainrefund.com
+      - KAFKA_ADVERTISED_PORT=9092
+    volumes:
+        - ~/crypto-config/ordererOrganizations/chainrefund.com/orderers/orderer.chainrefund.com/tls/:/var/hyperledger/orderer/tls
+    ports:
+      - target: 9092
+        published: 9092
+        mode: host
+    deploy:
+            mode: replicated
+            replicas: 1
+            restart_policy:
+              condition: on-failure
+            placement:
+                constraints:
+                    - node.hostname == ip-172-31-47-47
+                    # - node.role == manager
+    depends_on:
+      - zookeeper0
+      - zookeeper1
+      - zookeeper2
+    extra_hosts:
+    - "orderer.chainrefund.com:172.31.32.53"
+    - "zookeeper0:172.31.47.47"
+    - "zookeeper1:172.31.40.38"
+    - "zookeeper2:172.31.40.83"
+    networks:
+      cr_network:
+        aliases:
+          - kafka0.chainrefund.com
+
+  kafka1:
+    container_name: kafka1
+    image: hyperledger/fabric-kafka:0.4.14
+    environment:
+      - KAFKA_TLS=true
+      - CORE_PEER_TLS_CERT_FILE=/etc/hyperledger/fabric/tls/server.crt
+      - CORE_PEER_TLS_KEY_FILE=/etc/hyperledger/fabric/tls/server.key
+      - CORE_PEER_TLS_ROOTCERT_FILE=/etc/hyperledger/fabric/tls/ca.crt
+      - ORDERER_GENERAL_TLS_PRIVATEKEY=/var/hyperledger/orderer/tls/server.key
+      - ORDERER_GENERAL_TLS_CERTIFICATE=/var/hyperledger/orderer/tls/server.crt
+      - ORDERER_GENERAL_TLS_ROOTCAS=[/var/hyperledger/orderer/tls/ca.crt]
+      - ORDERER_GENERAL_CLUSTER_CLIENTCERTIFICATE=/var/hyperledger/orderer/tls/server.crt
+      - ORDERER_GENERAL_CLUSTER_CLIENTPRIVATEKEY=/var/hyperledger/orderer/tls/server.key
+      - ORDERER_GENERAL_CLUSTER_ROOTCAS=[/var/hyperledger/orderer/tls/ca.crt]
+      - FABRIC_LOGGING_SPEC=DEBUG
+      - KAFKA_MESSAGE_MAX_BYTES=300000000 #103809024 # 99 * 1024 * 1024 B
+      - KAFKA_REPLICA_FETCH_MAX_BYTES=300000000 #103809024 # 99 * 1024 * 1024 B
+      - KAFKA_UNCLEAN_LEADER_ELECTION_ENABLE=true
+      - KAFKA_BROKER_ID=1
+      - KAFKA_MIN_INSYNC_REPLICAS=2
+      - KAFKA_DEFAULT_REPLICATION_FACTOR=3
+      - KAFKA_ZOOKEEPER_CONNECT=zookeeper0:2181,zookeeper1:2181,zookeeper2:2181
+      - KAFKA_ADVERTISED_LISTENERS=PLAINTEXT://172.31.40.38:9092
+      - KAFKA_ADVERTISED_HOST_NAME=kafka1.chainrefund.com
+      - KAFKA_ADVERTISED_PORT=9092
+    volumes:
+        - ~/crypto-config/ordererOrganizations/chainrefund.com/orderers/orderer.chainrefund.com/tls/:/var/hyperledger/orderer/tls
+    ports:
+      - target: 9092
+        published: 9092
+        mode: host
+    deploy:
+            mode: replicated
+            replicas: 1
+            restart_policy:
+              condition: on-failure
+            placement:
+                constraints:
+                    - node.hostname == ip-172-31-40-38
+                    # - node.role == manager
+    depends_on:
+      - zookeeper0
+      - zookeeper1
+      - zookeeper2
+    extra_hosts:
+    - "orderer.chainrefund.com:172.31.32.53"
+    - "zookeeper0:172.31.47.47"
+    - "zookeeper1:172.31.40.38"
+    - "zookeeper2:172.31.40.83"
+    networks:
+      cr_network:
+        aliases:
+          - kafka1.chainrefund.com
+
+  kafka2:
+    container_name: kafka2.chainrefund.com
+    image: hyperledger/fabric-kafka:0.4.14
+    environment:
+      - KAFKA_TLS=true
+      - CORE_PEER_TLS_CERT_FILE=/etc/hyperledger/fabric/tls/server.crt
+      - CORE_PEER_TLS_KEY_FILE=/etc/hyperledger/fabric/tls/server.key
+      - CORE_PEER_TLS_ROOTCERT_FILE=/etc/hyperledger/fabric/tls/ca.crt
+      - ORDERER_GENERAL_TLS_PRIVATEKEY=/var/hyperledger/orderer/tls/server.key
+      - ORDERER_GENERAL_TLS_CERTIFICATE=/var/hyperledger/orderer/tls/server.crt
+      - ORDERER_GENERAL_TLS_ROOTCAS=[/var/hyperledger/orderer/tls/ca.crt]
+      - ORDERER_GENERAL_CLUSTER_CLIENTCERTIFICATE=/var/hyperledger/orderer/tls/server.crt
+      - ORDERER_GENERAL_CLUSTER_CLIENTPRIVATEKEY=/var/hyperledger/orderer/tls/server.key
+      - ORDERER_GENERAL_CLUSTER_ROOTCAS=[/var/hyperledger/orderer/tls/ca.crt]
+      - FABRIC_LOGGING_SPEC=DEBUG
+      - KAFKA_MESSAGE_MAX_BYTES=300000000 #103809024 # 99 * 1024 * 1024 B
+      - KAFKA_REPLICA_FETCH_MAX_BYTES=300000000 #103809024 # 99 * 1024 * 1024 B
+      - KAFKA_UNCLEAN_LEADER_ELECTION_ENABLE=true
+      - KAFKA_BROKER_ID=2
+      - KAFKA_MIN_INSYNC_REPLICAS=2
+      - KAFKA_DEFAULT_REPLICATION_FACTOR=3
+      - KAFKA_ZOOKEEPER_CONNECT=zookeeper0:2181,zookeeper1:2181,zookeeper2:2181
+      - KAFKA_ADVERTISED_LISTENERS=PLAINTEXT://172.31.40.83:9092
+      - KAFKA_ADVERTISED_HOST_NAME=kafka2.chainrefund.com
+      - KAFKA_ADVERTISED_PORT=9092
+    volumes:
+      - ~/crypto-config/ordererOrganizations/chainrefund.com/orderers/orderer.chainrefund.com/tls/:/var/hyperledger/orderer/tls
+    ports:
+      - target: 9092
+        published: 9092
+        mode: host
+    deploy:
+            mode: replicated
+            replicas: 1
+            restart_policy:
+              condition: on-failure
+            placement:
+                constraints:
+                    - node.hostname == ip-172-31-40-83
+                    # - node.role == manager
+    depends_on:
+      - zookeeper0
+      - zookeeper1
+      - zookeeper2
+    extra_hosts:
+    - "orderer.chainrefund.com:172.31.32.53"
+    - "zookeeper0:172.31.47.47"
+    - "zookeeper1:172.31.40.38"
+    - "zookeeper2:172.31.40.83"
+    networks:
+      cr_network:
+        aliases:
+          - kafka2.chainrefund.com
+ 

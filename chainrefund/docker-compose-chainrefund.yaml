@@ -1,0 +1,155 @@
+# Copyright IBM Corp. All Rights Reserved.
+#
+# SPDX-License-Identifier: Apache-2.0
+#
+
+version: '3.4'
+
+volumes:
+  chainrefundOrg:
+
+networks:
+  cr_network:
+     external:
+        name: cr_network
+
+services:
+  chainrefundOrg:
+    container_name: peer0.chainrefundOrg.chainrefund.com
+    image: hyperledger/fabric-peer:1.4
+    environment:
+      - CORE_VM_ENDPOINT=unix:///host/var/run/docker.sock
+      # the following setting starts chaincode containers on the same
+      # bridge network as the peers
+      # https://docs.docker.com/compose/networking/
+      - CORE_VM_DOCKER_HOSTCONFIG_NETWORKMODE=cr_network
+      - FABRIC_LOGGING_SPEC=DEBUG
+      #- FABRIC_LOGGING_SPEC=DEBUG
+      - CORE_PEER_TLS_ENABLED=true
+      - CORE_PEER_GOSSIP_USELEADERELECTION=true
+      - CORE_PEER_GOSSIP_ORGLEADER=false
+      - CORE_PEER_PROFILE_ENABLED=true
+      - CORE_PEER_TLS_CERT_FILE=/etc/hyperledger/fabric/tls/server.crt
+      - CORE_PEER_TLS_KEY_FILE=/etc/hyperledger/fabric/tls/server.key
+      - CORE_PEER_TLS_ROOTCERT_FILE=/etc/hyperledger/fabric/tls/ca.crt
+      - CORE_PEER_ID=peer0.chainrefundOrg.chainrefund.com
+      - CORE_PEER_ADDRESS=peer0.chainrefundOrg.chainrefund.com:7051
+      - CORE_PEER_LISTENADDRESS=0.0.0.0:7051
+      - CORE_PEER_CHAINCODEADDRESS=peer0.chainrefundOrg.chainrefund.com:7052
+      - CORE_PEER_CHAINCODELISTENADDRESS=0.0.0.0:7052
+      - CORE_PEER_GOSSIP_BOOTSTRAP=peer0.chainrefundOrg.chainrefund.com:7051
+      - CORE_PEER_GOSSIP_EXTERNALENDPOINT=peer0.chainrefundOrg.chainrefund.com:7051
+      - CORE_PEER_LOCALMSPID=ChainrefundOrgMSP
+      - CORE_LEDGER_STATE_STATEDATABASE=CouchDB
+      - CORE_LEDGER_STATE_COUCHDBCONFIG_COUCHDBADDRESS=couchdb_chainrefund:5984
+      - CORE_LEDGER_STATE_COUCHDBCONFIG_USERNAME=
+      - CORE_LEDGER_STATE_COUCHDBCONFIG_PASSWORD=
+    volumes:
+        - /var/run/:/host/var/run/
+        - ~/crypto-config/peerOrganizations/chainrefundOrg.chainrefund.com/peers/peer0.chainrefundOrg.chainrefund.com/msp:/etc/hyperledger/fabric/msp
+        - ~/crypto-config/peerOrganizations/chainrefundOrg.chainrefund.com/peers/peer0.chainrefundOrg.chainrefund.com/tls:/etc/hyperledger/fabric/tls
+    working_dir: /opt/gopath/src/github.com/hyperledger/fabric/peer
+    command: peer node start
+    deploy:
+       mode: replicated
+       replicas: 1
+       restart_policy:
+          condition: on-failure
+       placement:
+          constraints:
+             - node.hostname == ip-172-31-33-161
+    ports:
+            - published: 7051
+              target: 7051
+              mode: host
+            - published: 7053
+              target: 7053
+              mode: host
+    extra_hosts:
+    - "couchdb_chainrefund:172.31.33.161"
+    networks:
+       cr_network:
+          aliases:
+             - peer0.chainrefundOrg.chainrefund.com
+
+  couchdb_chainrefund:
+    container_name: couchdb_chainrefund
+    image: hyperledger/fabric-couchdb:0.4.14
+    # Populate the COUCHDB_USER and COUCHDB_PASSWORD to set an admin user and password
+    # for CouchDB.  This will prevent CouchDB from operating in an "Admin Party" mode.
+    environment:
+      - COUCHDB_USER=
+      - COUCHDB_PASSWORD=
+    # Comment/Uncomment the port mapping if you want to hide/expose the CouchDB service,
+    # for chainrefund map it to utilize Fauxton User Interface in dev environments.
+    deploy:
+       mode: replicated
+       replicas: 1
+       restart_policy:
+          condition: on-failure
+       placement:
+          constraints:
+             - node.hostname == ip-172-31-33-161
+    ports:
+            - published: 5984
+              target: 5984
+              mode: host
+    networks:
+       - cr_network
+
+  cli:
+    container_name: cli
+    image: hyperledger/fabric-tools:1.4
+    tty: true
+    stdin_open: true
+    environment:
+      - SYS_CHANNEL=taxrefund-sys-channel
+      - CHANNEL_NAME=ch-taxrefund
+      - GOPATH=/opt/gopath
+      - CORE_VM_ENDPOINT=unix:///host/var/run/docker.sock
+      - FABRIC_LOGGING_SPEC=DEBUG
+        #- FABRIC_LOGGING_SPEC=INFO
+      - CORE_PEER_ID=cli
+      - CORE_PEER_ADDRESS=peer0.chainrefundOrg.chainrefund.com:7051
+      - CORE_PEER_LOCALMSPID=ChainrefundOrgMSP
+      - CORE_PEER_TLS_ENABLED=true
+        #- CORE_PEER_TLS_CLIENTAUTHREQUIRED=false
+        #- CORE_PEER_TLS_CLIENTCERT_FILE=/opt/gopath/src/github.com/hyperledger/fabric/peer/crypto/peerOrganizations/chainrefundOrg.chainrefund.com/users/User1@chainrefundOrg.chainrefund.com/tls/client.crt
+        #- CORE_PEER_TLS_CLIENTKEY_FILE=/opt/gopath/src/github.com/hyperledger/fabric/peer/crypto/peerOrganizations/chainrefundOrg.chainrefund.com/users/User1@chainrefundOrg.chainrefund.com/tls/client.key
+      - CORE_PEER_TLS_CERT_FILE=/opt/gopath/src/github.com/hyperledger/fabric/peer/crypto/peerOrganizations/chainrefundOrg.chainrefund.com/peers/peer0.chainrefundOrg.chainrefund.com/tls/server.crt
+      - CORE_PEER_TLS_KEY_FILE=/opt/gopath/src/github.com/hyperledger/fabric/peer/crypto/peerOrganizations/chainrefundOrg.chainrefund.com/peers/peer0.chainrefundOrg.chainrefund.com/tls/server.key
+      - CORE_PEER_TLS_ROOTCERT_FILE=/opt/gopath/src/github.com/hyperledger/fabric/peer/crypto/peerOrganizations/chainrefundOrg.chainrefund.com/peers/peer0.chainrefundOrg.chainrefund.com/tls/ca.crt
+      - CORE_PEER_MSPCONFIGPATH=/opt/gopath/src/github.com/hyperledger/fabric/peer/crypto/peerOrganizations/chainrefundOrg.chainrefund.com/users/Admin@chainrefundOrg.chainrefund.com/msp
+    volumes:
+        - /var/run/:/host/var/run/
+        - ~/chaincode/:/opt/gopath/src/github.com/chaincode
+        - ~/crypto-config:/opt/gopath/src/github.com/hyperledger/fabric/peer/crypto/
+          #- ~/scripts:/opt/gopath/src/github.com/hyperledger/fabric/peer/scripts/
+        - ~/channel-artifacts:/opt/gopath/src/github.com/hyperledger/fabric/peer/channel-artifacts/
+    working_dir: /opt/gopath/src/github.com/hyperledger/fabric/peer
+    command: /bin/bash
+    depends_on:
+      - peer0.chainrefundOrg.chainrefund.com
+    deploy:
+       mode: replicated
+       replicas: 1
+       restart_policy:
+          condition: on-failure
+       placement:
+          constraints:
+             - node.hostname == ip-172-31-33-161
+    extra_hosts:
+    - "orderer.chainrefund.com:172.31.32.53"
+      #- "kafka0.chainrefund.com:172.31.47.47"
+      #- "kafka1.chainrefund.com:172.31.40.38"
+      #- "kafka2.chainrefund.com:172.31.40.83"
+    - "peer0.chainrefundOrg.chainrefund.com:172.31.33.161"
+    - "peer0.customsOrg.chainrefund.com:172.31.47.47"
+    - "peer0.merchantsOrg.chainrefund.com:172.31.40.38"
+    - "peer0.nttOrg.chainrefund.com:172.31.40.83"
+    networks:
+       cr_network:
+          aliases:
+             - cli
+
+

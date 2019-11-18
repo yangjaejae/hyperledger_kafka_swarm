@@ -1,0 +1,69 @@
+# Copyright IBM Corp. All Rights Reserved.
+#
+# SPDX-License-Identifier: Apache-2.0
+#
+
+version: '3.4'
+
+volumes:
+  orderer:
+
+networks:
+  cr_network:
+    external:
+       name: cr_network
+
+services:
+
+  orderer:
+    container_name: orderer.chainrefund.com
+    image: hyperledger/fabric-orderer:1.4
+    environment:
+      - FABRIC_LOGGING_SPEC=DEBUG
+      - ORDERER_GENERAL_LISTENADDRESS=0.0.0.0
+      - ORDERER_GENERAL_GENESISMETHOD=file
+      - ORDERER_GENERAL_GENESISFILE=/var/hyperledger/orderer/orderer.genesis.block
+      - ORDERER_GENERAL_LOCALMSPID=OrdererMSP
+      - ORDERER_GENERAL_LOCALMSPDIR=/var/hyperledger/orderer/msp
+      # enabled TLS
+      - ORDERER_GENERAL_TLS_ENABLED=true
+      - ORDERER_GENERAL_TLS_PRIVATEKEY=/var/hyperledger/orderer/tls/server.key
+      - ORDERER_GENERAL_TLS_CERTIFICATE=/var/hyperledger/orderer/tls/server.crt
+      - ORDERER_GENERAL_TLS_ROOTCAS=[/var/hyperledger/orderer/tls/ca.crt]
+      - ORDERER_KAFKA_TOPIC_REPLICATIONFACTOR=1
+      - ORDERER_KAFKA_VERBOSE=true
+      - ORDERER_KAFKA_RETRY_SHORTINTERVAL=1s
+      - ORDERER_KAFKA_RETRY_SHORTTOTAL=30s
+      - ORDERER_KAFKA_SERVER=kafka
+      - ORDERER_KAFKA_BROKERS=[kafka0.chainrefund.com:9092,kafka1.chainrefund.com:9092,kafka2.chainrefund.com:9092]
+      - ORDERER_GENERAL_CLUSTER_CLIENTCERTIFICATE=/var/hyperledger/orderer/tls/server.crt
+      - ORDERER_GENERAL_CLUSTER_CLIENTPRIVATEKEY=/var/hyperledger/orderer/tls/server.key
+      - ORDERER_GENERAL_CLUSTER_ROOTCAS=[/var/hyperledger/orderer/tls/ca.crt]
+    volumes:
+        - ~/channel-artifacts/genesis.block:/var/hyperledger/orderer/orderer.genesis.block
+        - ~/crypto-config/ordererOrganizations/chainrefund.com/orderers/orderer.chainrefund.com/msp:/var/hyperledger/orderer/msp
+        - ~/crypto-config/ordererOrganizations/chainrefund.com/orderers/orderer.chainrefund.com/tls/:/var/hyperledger/orderer/tls
+    working_dir: /opt/gopath/src/github.com/hyperledger/fabric
+    command: orderer
+    deploy:
+       mode: replicated
+       replicas: 1
+       restart_policy:
+          condition: on-failure
+       placement:
+          constraints:
+             - node.hostname == ip-172-31-32-53
+    ports:
+            - published: 7050
+              target: 7050
+              mode: host
+    extra_hosts:
+            #- "cli:172.31.33.161"
+    - "kafka0.chainrefund.com:172.31.47.47"
+    - "kafka1.chainrefund.com:172.31.40.38"
+    - "kafka2.chainrefund.com:172.31.40.83"
+    networks:
+       cr_network:
+          aliases:
+             - orderer.chainrefund.com
+
