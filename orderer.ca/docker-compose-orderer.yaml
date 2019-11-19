@@ -52,16 +52,16 @@ services:
           condition: on-failure
        placement:
           constraints:
-             - node.hostname == ip-172-31-32-53
+             - node.hostname == ip-10-10-2-11
     ports:
             - published: 7050
               target: 7050
               mode: host
     extra_hosts:
             #- "cli:172.31.33.161"
-    - "kafka0.chainrefund.com:172.31.47.47"
-    - "kafka1.chainrefund.com:172.31.40.38"
-    - "kafka2.chainrefund.com:172.31.40.83"
+    - "kafka0.chainrefund.com:10.10.2.44"
+    - "kafka1.chainrefund.com:10.10.2.227"
+    - "kafka2.chainrefund.com:10.10.2.93"
     networks:
        cr_network:
           aliases:

@@ -36,7 +36,7 @@ services:
       - KAFKA_MIN_INSYNC_REPLICAS=2
       - KAFKA_DEFAULT_REPLICATION_FACTOR=3
       - KAFKA_ZOOKEEPER_CONNECT=zookeeper0:2181,zookeeper1:2181,zookeeper2:2181
-      - KAFKA_ADVERTISED_LISTENERS=PLAINTEXT://172.31.47.47:9092
+      - KAFKA_ADVERTISED_LISTENERS=PLAINTEXT://10.10.2.44:9092
       - KAFKA_ADVERTISED_HOST_NAME=kafka0.chainrefund.com
       - KAFKA_ADVERTISED_PORT=9092
     volumes:
@@ -52,17 +52,17 @@ services:
               condition: on-failure
             placement:
                 constraints:
-                    - node.hostname == ip-172-31-47-47
+                    - node.hostname == ip-10-10-2-44
                     # - node.role == manager
     depends_on:
       - zookeeper0
       - zookeeper1
       - zookeeper2
     extra_hosts:
-    - "orderer.chainrefund.com:172.31.32.53"
-    - "zookeeper0:172.31.47.47"
-    - "zookeeper1:172.31.40.38"
-    - "zookeeper2:172.31.40.83"
+    - "orderer.chainrefund.com:10.10.2.11"
+    - "zookeeper0:10.10.2.44"
+    - "zookeeper1:10.10.2.227"
+    - "zookeeper2:10.10.2.93"
     networks:
       cr_network:
         aliases:
@@ -90,7 +90,7 @@ services:
       - KAFKA_MIN_INSYNC_REPLICAS=2
       - KAFKA_DEFAULT_REPLICATION_FACTOR=3
       - KAFKA_ZOOKEEPER_CONNECT=zookeeper0:2181,zookeeper1:2181,zookeeper2:2181
-      - KAFKA_ADVERTISED_LISTENERS=PLAINTEXT://172.31.40.38:9092
+      - KAFKA_ADVERTISED_LISTENERS=PLAINTEXT://10.10.2.227:9092
       - KAFKA_ADVERTISED_HOST_NAME=kafka1.chainrefund.com
       - KAFKA_ADVERTISED_PORT=9092
     volumes:
@@ -106,17 +106,17 @@ services:
               condition: on-failure
             placement:
                 constraints:
-                    - node.hostname == ip-172-31-40-38
+                    - node.hostname == ip-10-10-2-227
                     # - node.role == manager
     depends_on:
       - zookeeper0
       - zookeeper1
       - zookeeper2
     extra_hosts:
-    - "orderer.chainrefund.com:172.31.32.53"
-    - "zookeeper0:172.31.47.47"
-    - "zookeeper1:172.31.40.38"
-    - "zookeeper2:172.31.40.83"
+    - "orderer.chainrefund.com:10.10.2.11"
+    - "zookeeper0:10.10.2.44"
+    - "zookeeper1:10.10.2.227"
+    - "zookeeper2:10.10.2.93"
     networks:
       cr_network:
         aliases:
@@ -144,7 +144,7 @@ services:
       - KAFKA_MIN_INSYNC_REPLICAS=2
       - KAFKA_DEFAULT_REPLICATION_FACTOR=3
       - KAFKA_ZOOKEEPER_CONNECT=zookeeper0:2181,zookeeper1:2181,zookeeper2:2181
-      - KAFKA_ADVERTISED_LISTENERS=PLAINTEXT://172.31.40.83:9092
+      - KAFKA_ADVERTISED_LISTENERS=PLAINTEXT://10.10.2.93:9092
       - KAFKA_ADVERTISED_HOST_NAME=kafka2.chainrefund.com
       - KAFKA_ADVERTISED_PORT=9092
     volumes:
@@ -160,17 +160,17 @@ services:
               condition: on-failure
             placement:
                 constraints:
-                    - node.hostname == ip-172-31-40-83
+                    - node.hostname == ip-10-10-2-93
                     # - node.role == manager
     depends_on:
       - zookeeper0
       - zookeeper1
       - zookeeper2
     extra_hosts:
-    - "orderer.chainrefund.com:172.31.32.53"
-    - "zookeeper0:172.31.47.47"
-    - "zookeeper1:172.31.40.38"
-    - "zookeeper2:172.31.40.83"
+    - "orderer.chainrefund.com:10.10.2.11"
+    - "zookeeper0:10.10.2.44"
+    - "zookeeper1:10.10.2.227"
+    - "zookeeper2:10.10.2.93"
     networks:
       cr_network:
         aliases:

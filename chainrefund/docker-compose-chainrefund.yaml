@@ -57,7 +57,7 @@ services:
           condition: on-failure
        placement:
           constraints:
-             - node.hostname == ip-172-31-33-161
+             - node.hostname == ip-10-10-2-251
     ports:
             - published: 7051
               target: 7051
@@ -66,7 +66,7 @@ services:
               target: 7053
               mode: host
     extra_hosts:
-    - "couchdb_chainrefund:172.31.33.161"
+    - "couchdb_chainrefund:10.10.2.251"
     networks:
        cr_network:
           aliases:
@@ -89,7 +89,7 @@ services:
           condition: on-failure
        placement:
           constraints:
-             - node.hostname == ip-172-31-33-161
+             - node.hostname == ip-10-10-2-251
     ports:
             - published: 5984
               target: 5984
@@ -137,16 +137,13 @@ services:
           condition: on-failure
        placement:
           constraints:
-             - node.hostname == ip-172-31-33-161
+             - node.hostname == ip-10-10-2-251
     extra_hosts:
-    - "orderer.chainrefund.com:172.31.32.53"
-      #- "kafka0.chainrefund.com:172.31.47.47"
-      #- "kafka1.chainrefund.com:172.31.40.38"
-      #- "kafka2.chainrefund.com:172.31.40.83"
-    - "peer0.chainrefundOrg.chainrefund.com:172.31.33.161"
-    - "peer0.customsOrg.chainrefund.com:172.31.47.47"
-    - "peer0.merchantsOrg.chainrefund.com:172.31.40.38"
-    - "peer0.nttOrg.chainrefund.com:172.31.40.83"
+    - "orderer.chainrefund.com:10.10.2.11"
+    - "peer0.chainrefundOrg.chainrefund.com:10.10.2.251"
+    - "peer0.customsOrg.chainrefund.com:10.10.2.44"
+    - "peer0.merchantsOrg.chainrefund.com:10.10.2.227"
+    - "peer0.nttOrg.chainrefund.com:10.10.2.93"
     networks:
        cr_network:
           aliases:

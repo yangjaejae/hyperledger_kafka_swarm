@@ -31,7 +31,7 @@ services:
           condition: on-failure
        placement:
           constraints:
-             - node.hostname == ip-172-31-32-53
+             - node.hostname == ip-10-10-2-11
     ports:
        - "7054:7054"
     networks:
